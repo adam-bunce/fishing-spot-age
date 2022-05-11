@@ -37,7 +37,6 @@ public class FishingSpotAgePlugin extends Plugin
 	final Map<Integer , FishingSpot> fishingSpots= new HashMap<>();
 
 
-
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -52,7 +51,6 @@ public class FishingSpotAgePlugin extends Plugin
 		overlayManager.remove(overlay);
 	}
 
-	// on spawn set the time to -1 then if its negative 1 make it brown or smth then change it only on move events
 	@Subscribe
 	public void onNpcSpawned(NpcSpawned npcSpawned)
 	{
@@ -62,18 +60,11 @@ public class FishingSpotAgePlugin extends Plugin
 			System.out.println("Rod Fishing Spot Spawned");
 			System.out.println(npcSpawned.getNpc().getIndex());
 			System.out.println();
-			// fishingSpots.put(npcSpawned.getNpc().getIndex(), npcSpawned.getNpc().getWorldLocation());
 
-			// set to -1 so the colour can be render to indicate that the plugin is unsure of how long that sot has been there
 			FishingSpot spot =new FishingSpot(npcSpawned.getNpc().getWorldLocation(), Instant.ofEpochMilli(-1));
 
-
-			 // TODO dont remove the spot in the overlay code or on the despawn code leave it in and then when it gets re-rendered it should still have the samae tiemr
-			// if the location is still the same then keep using the timer otherwise removeit
-			// theres an issue where itll be confusing, if it says lo adnig then theres an issue where
 			fishingSpots.put(npcSpawned.getNpc().getIndex(), spot);
 
-			// overlayManager.add(overlay);
 		}
 	}
 
@@ -86,7 +77,6 @@ public class FishingSpotAgePlugin extends Plugin
 			System.out.println();
 
 			FishingSpot spot =new FishingSpot(npcDespawned.getNpc().getWorldLocation(), Instant.now());
-			// remove the npc from the list
 			fishingSpots.remove(npcDespawned.getNpc().getIndex(), spot);
 
 		}
@@ -97,8 +87,6 @@ public class FishingSpotAgePlugin extends Plugin
 	// if the colour of their tile needs to be adjusted
 	@Subscribe
 	public void onGameTick(GameTick gameTick){
-
-		// [id, worldlocation]
 		for (Integer id : fishingSpots.keySet())
 		{
 			if (client.getCachedNPCs()[id] != null)
@@ -110,8 +98,6 @@ public class FishingSpotAgePlugin extends Plugin
 					System.out.println("SPOT MOVED after: " + fishingSpots.get(id).getTime() );
 					FishingSpot fishingSpot = new FishingSpot(client.getCachedNPCs()[id].getWorldLocation(), Instant.now());
 					fishingSpots.put(id, fishingSpot);
-
-
 					System.out.println(fishingSpots);
 				}
 			}

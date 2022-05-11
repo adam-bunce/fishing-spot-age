@@ -38,16 +38,8 @@ public class FishingSpotAgeOverlay extends Overlay {
 
 
         // Plugin toggle on/off order makes one of them appear on top
-        // TODO make it so tiem effects saturation of the colour
-            for (int id : plugin.fishingSpots.keySet()){
-                // this would cause the thing to not render on certain spots
-//                if (client.getCachedNPCs()[id] == null){
-//
-//                    System.out.println("CHECK IF THIS BREAKS IT");
-//                    break;
-//                }
-                // Cannot invoke "net.runelite.api.NPC.getCanvasTilePoly()" because "net.runelite.api.Client.getCachedNPCs()[id]" is null
 
+            for (int id : plugin.fishingSpots.keySet()){
 
                 Polygon poly = null;
 
@@ -55,12 +47,9 @@ public class FishingSpotAgeOverlay extends Overlay {
                     poly = client.getCachedNPCs()[id].getCanvasTilePoly();
                 }
 
-                // Polygon poly = client.getCachedNPCs()[id].getCanvasTilePoly();
-
                 if (poly != null)
                 {
 
-                    // System.out.println(plugin.fishingSpots.get(id).time);
                     long spotAge = Duration.between(plugin.fishingSpots.get(id).getTime(), Instant.now()).toMillis();
                     LocalPoint hold = fromWorld(this.client, client.getCachedNPCs()[id].getWorldLocation());
 
@@ -69,18 +58,6 @@ public class FishingSpotAgeOverlay extends Overlay {
 
                     seconds = seconds%60;
 
-
-                    //TODO add font adjusted in config
-                    // TODO redo the timings, maybe get an excel sheet going and
-
-
-                    // TODO move overlay up so its compatible with the default fishing plugin
-                    // analyse fishing spot age
-                    // 15 sec
-
-                   // spot movement not observed yet
-                    // because its negative 1 i get rollover to some insanley high int
-//                    if (plugin.fishingSpots.get(id).getTime().equals(Instant.ofEpochMilli(-1))) {
                     if (plugin.fishingSpots.get(id).getTime().equals(Instant.ofEpochMilli(-1))) {
                         OverlayUtil.renderPolygon(graphics, poly, new Color (15, 0, 255) );
                         Point textloc = Perspective.getCanvasTextLocation(this.client, graphics, hold, "Unknown", 0);
@@ -111,14 +88,8 @@ public class FishingSpotAgeOverlay extends Overlay {
                             OverlayUtil.renderPolygon(graphics, poly,Color.RED);
                         }
                     }
-
-
                 }
-
             }
-
-
-
         return null;
     }
 }
