@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -41,12 +42,14 @@ public class FishingSpotAgePlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		log.info("Fishing Spot Age started!");
+		overlayManager.add(overlay);
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
 		log.info("Fishing Spot Age stopped!");
+		overlayManager.remove(overlay);
 	}
 
 	// on spawn set the time to -1 then if its negative 1 make it brown or smth then change it only on move events
@@ -60,44 +63,61 @@ public class FishingSpotAgePlugin extends Plugin
 			System.out.println(npcSpawned.getNpc().getIndex());
 			System.out.println();
 			// fishingSpots.put(npcSpawned.getNpc().getIndex(), npcSpawned.getNpc().getWorldLocation());
-			FishingSpot spot =new FishingSpot(npcSpawned.getNpc().getWorldLocation(), Instant.now());
 
-			overlayManager.add(overlay);
+			// set to -1 so the colour can be render to indicate that the plugin is unsure of how long that sot has been there
+			FishingSpot spot =new FishingSpot(npcSpawned.getNpc().getWorldLocation(), Instant.ofEpochMilli(-1));
+
+
+			 // TODO dont remove the spot in the overlay code or on the despawn code leave it in and then when it gets re-rendered it should still have the samae tiemr
+			// if the location is still the same then keep using the timer otherwise removeit
+			// theres an issue where itll be confusing, if it says lo adnig then theres an issue where
 			fishingSpots.put(npcSpawned.getNpc().getIndex(), spot);
 
 			// overlayManager.add(overlay);
 		}
 	}
 
+	@Subscribe
+	public void onNpcDespawned(NpcDespawned npcDespawned){
+		System.out.println(npcDespawned.getNpc().getName());
+		if (npcDespawned.getNpc().getName().equals("Rod Fishing spot") || npcDespawned.getNpc().getName().equals("Fishing spot")){
+			System.out.println("Rod Fishing Spot Despawned");
+			System.out.println(npcDespawned.getNpc().getIndex());
+			System.out.println();
+
+			FishingSpot spot =new FishingSpot(npcDespawned.getNpc().getWorldLocation(), Instant.now());
+			// remove the npc from the list
+			fishingSpots.remove(npcDespawned.getNpc().getIndex(), spot);
+
+		}
+	}
+
+
 	// check if any of the spots have moved, if they have reset their timer otherwise check
 	// if the colour of their tile needs to be adjusted
 	@Subscribe
 	public void onGameTick(GameTick gameTick){
 
-		// check if youre in a fishing area before doing this to save on computnig pwoer
-
 		// [id, worldlocation]
 		for (Integer id : fishingSpots.keySet())
 		{
-			if (client.getCachedNPCs() != null)
+			if (client.getCachedNPCs()[id] != null)
 			{
 
-				// this is weird it does the opposite of what i thought maybe im just braindead though
-				// why didnt != work wtf
 				if (!(client.getCachedNPCs()[id].getWorldLocation().equals(fishingSpots.get(id).getLocation())))
 				{
 
-					//  TODO rest spot time on relog as it will no longer be accurate
-					System.out.println("SPOT MOVED");
+					System.out.println("SPOT MOVED after: " + fishingSpots.get(id).getTime() );
 					FishingSpot fishingSpot = new FishingSpot(client.getCachedNPCs()[id].getWorldLocation(), Instant.now());
 					fishingSpots.put(id, fishingSpot);
 
-					overlayManager.add(overlay);
+
 					System.out.println(fishingSpots);
 				}
 			}
 		}
 	}
+
 
 	@Provides
 	FishingSpotAgeConfig provideConfig(ConfigManager configManager)
